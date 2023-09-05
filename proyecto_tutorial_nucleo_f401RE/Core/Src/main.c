@@ -96,13 +96,17 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 printMessage:
-    printWelcomeMessage(&huart2);
+    printWelcomeMessage2(&huart2);
   while (1)
   {
-	  opt = readUserInput(&huart2);
-	  processUserInput(&huart2,opt);
-	  if(opt == 3)
-		  goto printMessage;
+	  opt = readUserInput2(&huart2);
+	  if(opt > 0) {
+		  processUserInput2(&huart2,opt);
+		  if(opt == 3){
+			  goto printMessage;
+		  }
+	  performCriticalTasks2();
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
