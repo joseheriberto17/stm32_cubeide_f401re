@@ -66,6 +66,7 @@ static void MX_USART2_UART_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+  uint8_t opt = 0;
 
   /* USER CODE END 1 */
 
@@ -94,8 +95,14 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+printMessage:
+    printWelcomeMessage(&huart2);
   while (1)
   {
+	  opt = readUserInput(&huart2);
+	  processUserInput(&huart2,opt);
+	  if(opt == 3)
+		  goto printMessage;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
