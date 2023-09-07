@@ -26,7 +26,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-char msg[] = "Hello STM32 Lovers! This message is transferred in DMA Mode.\r\n";
+char msg[] = "Hello STM32 Lovers! This message is transferred in DMA Mode with register.\r\n";
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -93,6 +93,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  /*
   // -----modo DMA polling--------------------------
 
  //hay que activa el dma
@@ -105,7 +106,21 @@ int main(void)
   huart2.Instance->CR3 &= ~USART_CR3_DMAT;
   //Turn LD2 ON
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+  */
 
+  // -----  interruptions with register callbacks ---------------------
+
+  // Definir una función de devolución de llamada
+  HAL_StatusTypeDef status = HAL_DMA_RegisterCallback(&hdma_usart2_tx, HAL_DMA_XFER_CPLT_CB_ID,DMATransferComplete);
+
+  if (status != HAL_OK) {
+    // Handle error
+  }
+
+  HAL_DMA_Start_IT(&hdma_usart2_tx, (uint32_t)msg,(uint32_t)&huart2.Instance->DR, strlen(msg));
+
+  //Enable UART in DMA mode
+  huart2.Instance->CR3 |= USART_CR3_DMAT;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -207,6 +222,11 @@ static void MX_DMA_Init(void)
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
 
+  /* DMA interrupt init */
+  /* DMA1_Stream6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+
 }
 
 /**
@@ -247,7 +267,14 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void DMATransferComplete(DMA_HandleTypeDef *_hdma) {
+  if(_hdma->Instance == DMA1_Stream6) {
+    //Disable UART DMA mode
+    huart2.Instance->CR3 &= ~USART_CR3_DMAT;
+    //Turn LD2 ON
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+  }
+}
 /* USER CODE END 4 */
 
 /**
