@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "mode_interrupt_timer_basic_blink.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
