@@ -1,5 +1,9 @@
-../Core/Src/main.c:66:5:main	1
-../Core/Src/main.c:110:6:SystemClock_Config	3
-../Core/Src/main.c:157:13:MX_USART2_UART_Init	2
-../Core/Src/main.c:190:13:MX_GPIO_Init	1
-../Core/Src/main.c:230:6:Error_Handler	1
+../Core/Src/main.c:73:5:main	5
+../Core/Src/main.c:146:6:SystemClock_Config	3
+../Core/Src/main.c:193:13:MX_TIM2_Init	4
+../Core/Src/main.c:238:13:MX_USART2_UART_Init	2
+../Core/Src/main.c:271:13:MX_GPIO_Init	1
+../Core/Src/main.c:346:6:HAL_TIM_PeriodElapsedCallback	1
+../Core/Src/main.c:349:6:HAL_GPIO_EXTI_Callback	2
+../Core/Src/main.c:356:9:toogle_data	2
+../Core/Src/main.c:370:6:Error_Handler	1
