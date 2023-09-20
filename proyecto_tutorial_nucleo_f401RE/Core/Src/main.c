@@ -64,6 +64,7 @@ static void MX_TIM2_Init(void);
 	uint8_t counter_led = 0;
 	uint8_t push_dir = 0;
 	uint8_t stop = 0;
+	const uint8_t M_LED[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
 /* USER CODE END 0 */
 
 /**
@@ -73,7 +74,7 @@ static void MX_TIM2_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	const uint8_t M_LED[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -115,22 +116,25 @@ int main(void)
 
   while (1)
   {
-	  if (stop == 1) {
-		  HAL_GPIO_WritePin(LED_1_GPIO_Port,LED_1_Pin,1);
-		  HAL_GPIO_WritePin(LED_2_GPIO_Port,LED_2_Pin,1);
-		  HAL_GPIO_WritePin(LED_3_GPIO_Port,LED_3_Pin,1);
-	  } else {
-		  if (counter_add == 1){
-			  counter_add = 0;
-			  if (counter_led == 3) {
-				  counter_led = 0;
-			  }
-			  for (int i = 0; i < 3; ++i) {
-				  HAL_GPIO_WritePin(gpio_ports[i],gpio_pins[i],M_LED[counter_led][2*push_dir*(1-i)+i]);
-			  }
-			  counter_led++;
+//	  if (stop == 1) {
+//		  HAL_GPIO_WritePin(LED_1_GPIO_Port,LED_1_Pin,1);
+//		  HAL_GPIO_WritePin(LED_2_GPIO_Port,LED_2_Pin,1);
+//		  HAL_GPIO_WritePin(LED_3_GPIO_Port,LED_3_Pin,1);
+//	  } else {
+
+	  if (counter_add == 1){
+		  counter_add = 0;
+		  if (counter_led == 3) {
+			  counter_led = 0;
 		  }
+		  for (int i = 0; i < 3; ++i) {
+			  if (stop == 0) {
+			  HAL_GPIO_WritePin(gpio_ports[i],gpio_pins[i],M_LED[counter_led][2*push_dir*(1-i)+i]);
+			  }
+		  }
+		  counter_led++;
 	  }
+//	  }
 
     /* USER CODE END WHILE */
 
@@ -347,10 +351,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	counter_add = 1;
 }
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if (GPIO_Pin == GPIO_PIN_13) {
+	if (GPIO_Pin == B1_Pin) {
 		push_dir =  toogle_data(push_dir);
-	} else {
+	}
+	if (GPIO_Pin == PUSH_2_Pin){
 		stop =  toogle_data(stop);
+		if (stop ==1) {
+			HAL_GPIO_WritePin(LED_1_GPIO_Port,LED_1_Pin,1);
+			HAL_GPIO_WritePin(LED_2_GPIO_Port,LED_2_Pin,1);
+			HAL_GPIO_WritePin(LED_3_GPIO_Port,LED_3_Pin,1);
+		}
 	}
 }
 uint8_t toogle_data(uint8_t variable){
