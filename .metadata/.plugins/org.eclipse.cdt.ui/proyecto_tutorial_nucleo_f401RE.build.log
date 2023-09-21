@@ -1,4 +1,4 @@
-23:28:28 **** Incremental Build of configuration Debug for project proyecto_tutorial_nucleo_f401RE ****
+12:41:46 **** Incremental Build of configuration Debug for project proyecto_tutorial_nucleo_f401RE ****
 make -j8 all 
 arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F401xE -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
 arm-none-eabi-gcc -o "proyecto_tutorial_nucleo_f401RE.elf" @"objects.list"   -mcpu=cortex-m4 -T"/home/joseheriberto24/STM32CubeIDE/workspace_tutorial/proyecto_tutorial_nucleo_f401RE/STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="proyecto_tutorial_nucleo_f401RE.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
@@ -7,11 +7,11 @@ Finished building target: proyecto_tutorial_nucleo_f401RE.elf
 arm-none-eabi-size   proyecto_tutorial_nucleo_f401RE.elf 
 arm-none-eabi-objdump -h -S  proyecto_tutorial_nucleo_f401RE.elf  > "proyecto_tutorial_nucleo_f401RE.list"
    text	   data	    bss	    dec	    hex	filename
-  10828	     40	   1712	  12580	   3124	proyecto_tutorial_nucleo_f401RE.elf
+  17408	    120	   2048	  19576	   4c78	proyecto_tutorial_nucleo_f401RE.elf
 Finished building: default.size.stdout
  
 Finished building: proyecto_tutorial_nucleo_f401RE.list
  
 
-23:28:28 Build Finished. 0 errors, 0 warnings. (took 542ms)
+12:41:47 Build Finished. 0 errors, 0 warnings. (took 543ms)
 

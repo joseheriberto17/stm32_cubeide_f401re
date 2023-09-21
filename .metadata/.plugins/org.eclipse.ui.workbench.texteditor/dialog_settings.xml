@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
-		<item key="selection" value="TIM_DMAPeriodElapsedHalfCplt"/>
-		<item key="wrap" value="true"/>
+		<item key="selection" value="__HAL_UART_GET_FLAG"/>
+		<item key="wrap" value="false"/>
 		<item key="casesensitive" value="false"/>
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
 		<list key="findhistory">
+			<item value="__HAL_UART_GET_FLAG"/>
+			<item value="__HAL_TIM_ENABLE_DMA"/>
+			<item value="CCR1"/>
+			<item value="CCR"/>
+			<item value="__HAL_TIM_ENABLE"/>
+			<item value="TIM_FLAG_CC1"/>
+			<item value="HAL_TIM_IC_Start"/>
+			<item value="HAL_TIM_ReadCapturedValue"/>
 			<item value="TIM_DMAPeriodElapsedHalfCplt"/>
 			<item value="HAL_TIM"/>
 			<item value="HAL_TIM_PeriodElaps"/>
@@ -20,8 +28,8 @@
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item key="DIALOG_X_ORIGIN" value="1009"/>
-		<item key="DIALOG_Y_ORIGIN" value="360"/>
+		<item key="DIALOG_X_ORIGIN" value="928"/>
+		<item key="DIALOG_Y_ORIGIN" value="423"/>
 		<item key="DIALOG_WIDTH" value="363"/>
 		<item key="DIALOG_HEIGHT" value="437"/>
 		<item key="DIALOG_FONT_NAME" value="1|Ubuntu|11.0|0|GTK|1|"/>

@@ -32,7 +32,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define WELCOME_MSG  "bienvenidos al stm32f401RE"
+#define MAIN_MENU   "\r\n1) toogle led.\r\n2)direccion del led.\r\n3)paro activado."
+#define PROMPT "\r\n"
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -65,6 +67,9 @@ static void MX_TIM2_Init(void);
 	uint8_t push_dir = 0;
 	uint8_t stop = 0;
 	const uint8_t M_LED[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+	uint8_t Flag_IC = 0;
+	uint8_t opt = 0;
+	uint8_t Flag_Rx = 0;
 /* USER CODE END 0 */
 
 /**
@@ -111,16 +116,32 @@ int main(void)
 //  HAL_GPIO_WritePin(LED_1_GPIO_Port,LED_1_Pin,M_LED[i][0]);
 //  HAL_GPIO_WritePin(LED_2_GPIO_Port,LED_2_Pin,M_LED[i][1]);
 //  HAL_GPIO_WritePin(LED_3_GPIO_Port,LED_3_Pin,M_LED[i][2]);
+
+  // timer 2 para la secuencia de led
   HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_IC_Start(&htim2, TIM_CHANNEL_1);
+
+  // uart 2 para la comunicacion
+  print_msg(&huart2);
+
+  while (1) {
+	  if (__HAL_UART_GET_FLAG(&huart2,UART_FLAG_RXNE)) {
+		  opt = readUserInput();
+		  processUserInput(opt);
+		  //		  if (opt == 4) {
+		  //			  print_msg(&huart2);
+		  //		  }
+		  __HAL_UART_CLEAR_FLAG(&huart2,UART_FLAG_RXNE);
+	  }
 
 
-  while (1)
-  {
-//	  if (stop == 1) {
-//		  HAL_GPIO_WritePin(LED_1_GPIO_Port,LED_1_Pin,1);
-//		  HAL_GPIO_WritePin(LED_2_GPIO_Port,LED_2_Pin,1);
-//		  HAL_GPIO_WritePin(LED_3_GPIO_Port,LED_3_Pin,1);
-//	  } else {
+	  if (__HAL_TIM_GET_FLAG(&htim2,TIM_FLAG_CC1)) {
+
+		  Flag_IC=toogle_data(Flag_IC);
+		  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,Flag_IC);
+
+		  __HAL_TIM_CLEAR_FLAG(&htim2,TIM_FLAG_CC1);
+	  }
 
 	  if (counter_add == 1){
 		  counter_add = 0;
@@ -129,13 +150,11 @@ int main(void)
 		  }
 		  for (int i = 0; i < 3; ++i) {
 			  if (stop == 0) {
-			  HAL_GPIO_WritePin(gpio_ports[i],gpio_pins[i],M_LED[counter_led][2*push_dir*(1-i)+i]);
+				  HAL_GPIO_WritePin(gpio_ports[i],gpio_pins[i],M_LED[counter_led][2*push_dir*(1-i)+i]);
 			  }
 		  }
 		  counter_led++;
 	  }
-//	  }
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -203,6 +222,7 @@ static void MX_TIM2_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_IC_InitTypeDef sConfigIC = {0};
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
@@ -222,9 +242,21 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_IC_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+  sConfigIC.ICFilter = 0;
+  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -363,6 +395,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		}
 	}
 }
+void print_msg(UART_HandleTypeDef *huart){
+	HAL_UART_Transmit(huart, (uint8_t*)"\033[0;0H", strlen("\033[0;0H"), HAL_MAX_DELAY);
+	HAL_UART_Transmit(huart, (uint8_t*)"\033[2J", strlen("\033[2J"), HAL_MAX_DELAY);
+	HAL_UART_Transmit(huart, (uint8_t*)WELCOME_MSG, strlen(WELCOME_MSG), HAL_MAX_DELAY);
+	HAL_UART_Transmit(huart, (uint8_t*)MAIN_MENU, strlen(MAIN_MENU), HAL_MAX_DELAY);
+}
+
+uint8_t readUserInput(void) {
+	char readBuf[1];
+
+	HAL_UART_Transmit(&huart2, (uint8_t*)PROMPT, strlen(PROMPT), HAL_MAX_DELAY);
+	HAL_UART_Receive(&huart2, (uint8_t*)readBuf, 1, HAL_MAX_DELAY);
+	return atoi(readBuf);
+}
 uint8_t toogle_data(uint8_t variable){
 	if (variable == 0) {
 		variable = 1;
@@ -370,6 +416,40 @@ uint8_t toogle_data(uint8_t variable){
 		variable = 0;
 	}
 	return variable;
+}
+uint8_t processUserInput(uint8_t opt) {
+	char msg[60];
+
+	if(!opt || opt > 3)
+	return 0;
+
+	sprintf(msg, "%d", opt);
+	HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 300);
+
+	switch(opt) {
+	case 1:
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		break;
+	case 2:
+		push_dir=toogle_data(push_dir);
+		sprintf(msg, "\r\n Dir_status: %s", push_dir == 1 ? "derecha" : "izquierda");
+		HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 300);
+		break;
+
+	case 3:
+		stop =  toogle_data(stop);
+		if (stop ==1) {
+			HAL_GPIO_WritePin(LED_1_GPIO_Port,LED_1_Pin,1);
+			HAL_GPIO_WritePin(LED_2_GPIO_Port,LED_2_Pin,1);
+			HAL_GPIO_WritePin(LED_3_GPIO_Port,LED_3_Pin,1);
+		}
+		sprintf(msg, "\r\n Stop: %s.", stop == 1 ? "ON" : "OFF");
+		HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 300);
+		break;
+	case 4:
+		return 2;
+	}
+	return 1;
 }
 /* USER CODE END 4 */
 
