@@ -60,8 +60,8 @@ all: main-build
 main-build: proyecto_tutorial_nucleo_f401RE.elf secondary-outputs
 
 # Tool invocations
-proyecto_tutorial_nucleo_f401RE.elf proyecto_tutorial_nucleo_f401RE.map: $(OBJS) $(USER_OBJS) /home/joseheriberto24/STM32CubeIDE/workspace_tutorial/proyecto_tutorial_nucleo_f401RE/STM32F401RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "proyecto_tutorial_nucleo_f401RE.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/joseheriberto24/STM32CubeIDE/workspace_tutorial/proyecto_tutorial_nucleo_f401RE/STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="proyecto_tutorial_nucleo_f401RE.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+proyecto_tutorial_nucleo_f401RE.elf proyecto_tutorial_nucleo_f401RE.map: $(OBJS) $(USER_OBJS) /home/joseheri24/STM32CubeIDE/Workspace_tutorial/proyecto_tutorial_nucleo_f401RE/STM32F401RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "proyecto_tutorial_nucleo_f401RE.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/joseheri24/STM32CubeIDE/Workspace_tutorial/proyecto_tutorial_nucleo_f401RE/STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="proyecto_tutorial_nucleo_f401RE.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

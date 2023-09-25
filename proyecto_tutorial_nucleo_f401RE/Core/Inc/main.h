@@ -87,7 +87,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 uint8_t toogle_data(uint8_t variable);
-void print_msg();
+void print_msg(UART_HandleTypeDef *huart);
 uint8_t readUserInput(void);
 uint8_t processUserInput(uint8_t opt);
 /* USER CODE END Private defines */

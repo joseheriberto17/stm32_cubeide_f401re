@@ -34,7 +34,9 @@
 /* USER CODE BEGIN PD */
 #define WELCOME_MSG  "bienvenidos al stm32f401RE"
 #define MAIN_MENU   "\r\n1) toogle led.\r\n2)direccion del led.\r\n3)paro activado."
-#define PROMPT "\r\n"
+#define PROMPT "\r\n>"
+
+  char* tramos[]={"\033[0;0H","\033[2J",WELCOME_MSG,MAIN_MENU,PROMPT};
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -69,7 +71,13 @@ static void MX_TIM2_Init(void);
 	const uint8_t M_LED[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
 	uint8_t Flag_IC = 0;
 	uint8_t opt = 0;
-	uint8_t Flag_Rx = 0;
+	uint8_t Flag_Rx = 1;
+
+	char readBuf[1];
+	int32_t data = 0;
+
+
+
 /* USER CODE END 0 */
 
 /**
@@ -109,29 +117,28 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-//  uint8_t data[3] ={M_LED[0][0],M_LED[0][1],M_LED[0][2]};
-
-//  uint8_t i = 1;
-//
-//  HAL_GPIO_WritePin(LED_1_GPIO_Port,LED_1_Pin,M_LED[i][0]);
-//  HAL_GPIO_WritePin(LED_2_GPIO_Port,LED_2_Pin,M_LED[i][1]);
-//  HAL_GPIO_WritePin(LED_3_GPIO_Port,LED_3_Pin,M_LED[i][2]);
-
   // timer 2 para la secuencia de led
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_IC_Start(&htim2, TIM_CHANNEL_1);
 
   // uart 2 para la comunicacion
   print_msg(&huart2);
+  //data = 20 SOLO LEE el numero e bites de todo el arrego;
+  data = sizeof(tramos);
+
+  char msg_2[30];
 
   while (1) {
-	  if (__HAL_UART_GET_FLAG(&huart2,UART_FLAG_RXNE)) {
-		  opt = readUserInput();
+	  //el Flag_Rx esta pndiente de un comando
+	  opt=readUserInput();
+
+	  if (opt > 0) {
+		  // este proceso funciona con el uart normal
 		  processUserInput(opt);
-		  //		  if (opt == 4) {
-		  //			  print_msg(&huart2);
-		  //		  }
-		  __HAL_UART_CLEAR_FLAG(&huart2,UART_FLAG_RXNE);
+		  if (opt ==4) {
+			  //reimprime la consola
+			  print_msg(&huart2);
+		  }
 	  }
 
 
@@ -139,6 +146,9 @@ int main(void)
 
 		  Flag_IC=toogle_data(Flag_IC);
 		  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,Flag_IC);
+
+		  sprintf(msg_2, "\r\n LED : %s", Flag_IC == 1 ? "ON" : "OFF");
+		  HAL_UART_Transmit(&huart2, (uint8_t*)msg_2, strlen(msg_2), 300);
 
 		  __HAL_TIM_CLEAR_FLAG(&htim2,TIM_FLAG_CC1);
 	  }
@@ -379,12 +389,21 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+	Flag_Rx=1;
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	counter_add = 1;
 }
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	char msg_2[30];
+
 	if (GPIO_Pin == B1_Pin) {
 		push_dir =  toogle_data(push_dir);
+
+	sprintf(msg_2, "\r\n DIR: : %s", push_dir == 1 ? "DERECHA" : "IZQUIERDA");
+	HAL_UART_Transmit(&huart2, (uint8_t*)msg_2, strlen(msg_2), 300);
 	}
 	if (GPIO_Pin == PUSH_2_Pin){
 		stop =  toogle_data(stop);
@@ -393,21 +412,28 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 			HAL_GPIO_WritePin(LED_2_GPIO_Port,LED_2_Pin,1);
 			HAL_GPIO_WritePin(LED_3_GPIO_Port,LED_3_Pin,1);
 		}
+	sprintf(msg_2, "\r\n DIR: : %s", stop == 1 ? "ON" : "OFF");
+	HAL_UART_Transmit(&huart2, (uint8_t*)msg_2, strlen(msg_2), 300);
 	}
 }
 void print_msg(UART_HandleTypeDef *huart){
-	HAL_UART_Transmit(huart, (uint8_t*)"\033[0;0H", strlen("\033[0;0H"), HAL_MAX_DELAY);
-	HAL_UART_Transmit(huart, (uint8_t*)"\033[2J", strlen("\033[2J"), HAL_MAX_DELAY);
-	HAL_UART_Transmit(huart, (uint8_t*)WELCOME_MSG, strlen(WELCOME_MSG), HAL_MAX_DELAY);
-	HAL_UART_Transmit(huart, (uint8_t*)MAIN_MENU, strlen(MAIN_MENU), HAL_MAX_DELAY);
+	for (int i = 0; i < 5; ++i) {
+		HAL_UART_Transmit_IT(huart, (uint8_t*) tramos[i], strlen(tramos[i]));
+		//	    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
+		while (HAL_UART_GetState(huart) == HAL_UART_STATE_BUSY_TX ||
+				HAL_UART_GetState(huart) == HAL_UART_STATE_BUSY_TX_RX);
+	}
 }
 
 uint8_t readUserInput(void) {
-	char readBuf[1];
-
-	HAL_UART_Transmit(&huart2, (uint8_t*)PROMPT, strlen(PROMPT), HAL_MAX_DELAY);
-	HAL_UART_Receive(&huart2, (uint8_t*)readBuf, 1, HAL_MAX_DELAY);
-	return atoi(readBuf);
+	int valor =-1;
+	if (Flag_Rx ==1){
+		Flag_Rx =0;
+		HAL_UART_Receive_IT(&huart2, (uint8_t*) readBuf, 1);
+		valor =atoi(readBuf);
+//		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	}
+	return valor;
 }
 uint8_t toogle_data(uint8_t variable){
 	if (variable == 0) {
@@ -449,6 +475,7 @@ uint8_t processUserInput(uint8_t opt) {
 	case 4:
 		return 2;
 	}
+	HAL_UART_Transmit(&huart2, (uint8_t*)PROMPT, strlen(PROMPT), HAL_MAX_DELAY);
 	return 1;
 }
 /* USER CODE END 4 */
